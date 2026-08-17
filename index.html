@@ -100,9 +100,50 @@
       height: 100%;
       object-fit: cover;
     }
+
+    /* Chrome New Tab Floating Search Bar Overlay */
+    .search-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 100;
+      width: 90%;
+      max-width: 580px;
+      pointer-events: auto;
+    }
+
+    .search-overlay input {
+      width: 100%;
+      padding: 16px 28px;
+      font-size: 1.05rem;
+      font-family: system-ui, -apple-system, sans-serif;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(12, 14, 22, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: #ffffff;
+      outline: none;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 243, 255, 0.15);
+      transition: all 0.25s ease;
+    }
+
+    .search-overlay input:focus {
+      border-color: #00f3ff;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.95), 0 0 35px rgba(0, 243, 255, 0.4);
+      background: rgba(8, 10, 16, 0.92);
+    }
   </style>
 </head>
 <body>
+
+  <!-- Floating Google Search Bar for Chrome Background -->
+  <div class="search-overlay">
+    <form action="https://www.google.com/search" method="GET">
+      <input type="text" name="q" placeholder="Search Google or type a URL..." autocomplete="off" autofocus />
+    </form>
+  </div>
 
   <div id="grid" class="grid-container">
     <!-- Tiles injected by JS -->

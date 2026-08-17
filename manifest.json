@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Album Art Matrix Background",
+  "version": "1.0",
+  "description": "Dynamic 3D Album Art Tile Matrix live background for Chrome New Tab",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": []
+}
