@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Album Art Tile Matrix</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #08090c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Fullscreen Seamless Grid Matrix */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(7, 1fr);
+      gap: 10px;
+      width: 98vw;
+      height: 94vh;
+      padding: 10px;
+      perspective: 1000px;
+    }
+
+    /* 3D Tile Cell */
+    .tile {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      perspective: 800px;
+      cursor: pointer;
+    }
+
+    .tile-card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 3D Flipped State */
+    .tile-card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .tile-card.flipped-x {
+      transform: rotateX(180deg);
+    }
+
+    /* Card Front & Back Faces */
+    .face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .face.front {
+      transform: rotateY(0deg);
+    }
+
+    .face.back {
+      transform: rotateY(180deg);
+    }
+
+    .face.back-x {
+      transform: rotateX(180deg);
+    }
+
+    /* SVG Artwork or Cover Graphic */
+    .face svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="grid" class="grid-container">
+    <!-- Tiles injected by JS -->
+  </div>
+
+  <script>
+    // --- 1. DUMMY ALBUM ART GENERATOR ---
+    const PALETTES = [
+      ['#00f3ff', '#ff007f'],
+      ['#ffaa00', '#ff0055'],
+      ['#00ff9d', '#00f3ff'],
+      ['#3b82f6', '#9d4edd'],
+      ['#ffd700', '#ff8c00'],
+      ['#f43f5e', '#8b5cf6'],
+      ['#10b981', '#3b82f6'],
+      ['#ec4899', '#8b5cf6']
+    ];
+
+    const ALBUM_TITLES = [
+      'CURRENTS', 'DISCOVERY', 'OUTRUN', 'AQUEMINI', 'MEZZANINE',
+      'RAM', 'KIND OF BLUE', 'OK COMPUTER', 'DIVE', 'AFTER HOURS',
+      'NEVERMIND', 'CROSS', 'SYRO', 'SOLARIS', 'HYPERION'
+    ];
+
+    function createDummyArtwork(index) {
+      const p = PALETTES[index % PALETTES.length];
+      const title = ALBUM_TITLES[index % ALBUM_TITLES.length];
+      const c1 = p[0];
+      const c2 = p[1];
+
+      return `
+        <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="g-${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${c1}"/>
+              <stop offset="100%" stop-color="${c2}"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="300" fill="url(#g-${index})"/>
+          <circle cx="150" cy="150" r="${40 + (index * 13) % 70}" fill="#000" opacity="0.3"/>
+          <circle cx="150" cy="150" r="${20 + (index * 7) % 40}" fill="#fff" opacity="0.2"/>
+          <text x="150" y="270" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="16" font-weight="800" letter-spacing="2">${title}</text>
+        </svg>
+      `;
+    }
+
+    // --- 2. BUILD GRID MATRIX ---
+    const COLS = 12;
+    const ROWS = 7;
+    const TOTAL_TILES = COLS * ROWS;
+    const gridEl = document.getElementById('grid');
+    const tiles = [];
+    let artIndexSeed = 0;
+
+    for (let i = 0; i < TOTAL_TILES; i++) {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+
+      const frontArt = createDummyArtwork(artIndexSeed++);
+      const backArt = createDummyArtwork(artIndexSeed++);
+
+      tile.innerHTML = `
+        <div class="tile-card">
+          <div class="face front">${frontArt}</div>
+          <div class="face back">${backArt}</div>
+        </div>
+      `;
+
+      const card = tile.querySelector('.tile-card');
+      const frontFace = tile.querySelector('.face.front');
+      const backFace = tile.querySelector('.face.back');
+
+      const tileData = {
+        el: tile,
+        card: card,
+        frontFace: frontFace,
+        backFace: backFace,
+        isFlipped: false,
+        isFlipping: false
+      };
+
+      // Click to manually flip tile
+      tile.addEventListener('click', () => flipTile(tileData));
+
+      gridEl.appendChild(tile);
+      tiles.push(tileData);
+    }
+
+    // --- 3. DYNAMIC 3D CARD FLIP FUNCTION ---
+    function flipTile(tileData) {
+      if (tileData.isFlipping) return;
+      tileData.isFlipping = true;
+
+      // Randomize flip axis (horizontal rotateY vs vertical rotateX)
+      const isXAxis = Math.random() > 0.5;
+
+      if (isXAxis) {
+        tileData.backFace.classList.add('back-x');
+        tileData.card.classList.toggle('flipped-x');
+      } else {
+        tileData.backFace.classList.remove('back-x');
+        tileData.card.classList.toggle('flipped');
+      }
+
+      // Mid-point: Update hidden face with new artwork
+      setTimeout(() => {
+        const nextArt = createDummyArtwork(artIndexSeed++);
+        if (tileData.isFlipped) {
+          tileData.frontFace.innerHTML = nextArt;
+        } else {
+          tileData.backFace.innerHTML = nextArt;
+        }
+        tileData.isFlipped = !tileData.isFlipped;
+      }, 400);
+
+      // Finish flip animation
+      setTimeout(() => {
+        tileData.isFlipping = false;
+      }, 800);
+    }
+
+    // --- 4. CONTINUOUS ASYNCHRONOUS FLIP LOOP ---
+    // Change exactly 1 tile at a time, every 5 seconds (5,000ms)
+    setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * tiles.length);
+      flipTile(tiles[randomIndex]);
+    }, 5000);
+  </script>
+</body>
+</html>
