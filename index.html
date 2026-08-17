@@ -109,7 +109,15 @@
   </div>
 
   <script>
-    // --- 1. DUMMY ALBUM ART GENERATOR ---
+    // --- 1. USER IMAGES CATALOG ---
+    // Place your image files in an "images" folder (e.g., images/cover1.jpg, images/cover2.png)
+    // and list their file paths or URLs here:
+    const USER_IMAGES = [
+      // 'images/1.jpg',
+      // 'images/2.png',
+      // 'images/3.jpg'
+    ];
+
     const PALETTES = [
       ['#00f3ff', '#ff007f'],
       ['#ffaa00', '#ff0055'],
@@ -149,6 +157,14 @@
       `;
     }
 
+    function getTileArtwork(index) {
+      if (USER_IMAGES && USER_IMAGES.length > 0) {
+        const imgUrl = USER_IMAGES[index % USER_IMAGES.length];
+        return `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover;display:block;" alt="Cover" />`;
+      }
+      return createDummyArtwork(index);
+    }
+
     // --- 2. BUILD GRID MATRIX ---
     const COLS = 12;
     const ROWS = 7;
@@ -161,8 +177,8 @@
       const tile = document.createElement('div');
       tile.className = 'tile';
 
-      const frontArt = createDummyArtwork(artIndexSeed++);
-      const backArt = createDummyArtwork(artIndexSeed++);
+      const frontArt = getTileArtwork(artIndexSeed++);
+      const backArt = getTileArtwork(artIndexSeed++);
 
       tile.innerHTML = `
         <div class="tile-card">
@@ -209,7 +225,7 @@
 
       // Mid-point: Update hidden face with new artwork
       setTimeout(() => {
-        const nextArt = createDummyArtwork(artIndexSeed++);
+        const nextArt = getTileArtwork(artIndexSeed++);
         if (tileData.isFlipped) {
           tileData.frontFace.innerHTML = nextArt;
         } else {
